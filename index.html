@@ -1,0 +1,320 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<title>Animasi 3D Servo SG90</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700&family=IBM+Plex+Sans:wght@400;500;600&display=swap">
+<style>
+/* Layout: satu kolom. Panggung 3D di atas, strip kontrol, panel info, lalu daftar 11 komponen. */
+:root{
+  --bg:#f3f7fc;--surface:#ffffff;--fg:#0f2238;--muted:#52657c;--accent:#0a66c2;--accent-ink:#ffffff;--line:#d3deeb;--tint:#e8f1fb;
+  --display:'Barlow Condensed','Arial Narrow',sans-serif;--body:'IBM Plex Sans',system-ui,sans-serif;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){--bg:#0b1522;--surface:#12233a;--fg:#e7eff9;--muted:#9fb2c8;--accent:#4ea1ff;--accent-ink:#06192f;--line:#26405f;--tint:#16304f;color-scheme:dark}}
+:root[data-theme="dark"]{--bg:#0b1522;--surface:#12233a;--fg:#e7eff9;--muted:#9fb2c8;--accent:#4ea1ff;--accent-ink:#06192f;--line:#26405f;--tint:#16304f;color-scheme:dark}
+body{background:var(--bg);color:var(--fg);font-family:var(--body);font-size:16px;line-height:1.5;padding-block:20px 32px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+.wrap{max-width:1100px;margin:0 auto;display:flex;flex-direction:column;gap:14px}
+.kicker{font-size:13px;font-weight:600;letter-spacing:.16em;text-transform:uppercase;color:var(--accent)}
+h1{margin:4px 0 6px;font:700 clamp(36px,7vw,60px)/1 var(--display);text-wrap:balance}
+.lead{margin:0;max-width:62ch;color:var(--muted)}
+.ident{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:10px 20px;margin:14px 0 0;padding:12px 16px;background:var(--tint);border:1px solid var(--line);border-radius:8px}
+.ident dt{font-size:12px;font-weight:600;letter-spacing:.12em;text-transform:uppercase;color:var(--muted)}
+.ident dd{margin:2px 0 0;font-weight:600;overflow-wrap:anywhere}
+.stage{position:relative;height:clamp(440px,64vh,760px);background:var(--surface);border:1px solid var(--line);border-radius:10px;overflow:hidden}
+.stage canvas{display:block;width:100%;height:100%}
+.fallback{padding:24px;color:var(--muted)}
+#leaders{position:absolute;inset:0;width:100%;height:100%;pointer-events:none}
+#leaders line{stroke:var(--accent);stroke-width:1.2;opacity:.7}
+.pill{position:absolute;top:0;display:flex;align-items:center;gap:8px;min-height:32px;border:1px solid var(--accent);background:var(--surface);color:var(--fg);border-radius:18px;padding:2px 12px 2px 2px;font:600 13px var(--body);cursor:pointer;transition:opacity .25s;opacity:0}
+.pill.l{left:10px}
+.pill.r{right:10px;flex-direction:row-reverse;padding:2px 2px 2px 12px}
+.pill .t{display:none}
+.n{width:28px;height:28px;border-radius:50%;background:var(--accent);color:var(--accent-ink);display:grid;place-items:center;font:700 14px var(--body);flex:none}
+.pill.sel{background:var(--accent);color:var(--accent-ink)}
+.pill.sel .n{background:var(--accent-ink);color:var(--accent)}
+@media (min-width:640px){.pill .t{display:inline}}
+.bar{display:flex;flex-wrap:wrap;gap:10px;align-items:center}
+.btn{min-height:44px;padding:0 16px;border:1px solid var(--line);background:var(--surface);color:var(--fg);border-radius:8px;font:500 15px var(--body);cursor:pointer}
+.btn[aria-pressed="true"]{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
+.btn:focus-visible,.pill:focus-visible,.chip:focus-visible,#explode:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
+.slide{display:flex;align-items:center;gap:10px;flex:1 1 260px;min-width:0;font-size:14px;color:var(--muted)}
+#explode{flex:1;min-width:0;accent-color:var(--accent);height:32px}
+.info{display:flex;gap:16px;align-items:flex-start;padding:16px;background:var(--surface);border:1px solid var(--line);border-radius:10px;min-height:92px}
+.big{font:700 52px/1 var(--display);color:var(--accent);min-width:2ch;text-align:center}
+.info h2{margin:0;font:700 26px/1.1 var(--display)}
+.info .en{font-size:13px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+.info p{margin:6px 0 0;max-width:64ch}
+.list-h{margin:10px 0 0;font:700 22px/1 var(--display);letter-spacing:.1em;text-transform:uppercase;color:var(--accent)}
+.parts{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:8px}
+.chip{width:100%;min-height:44px;display:flex;align-items:center;gap:10px;text-align:left;border:1px solid var(--line);background:var(--surface);color:var(--fg);border-radius:8px;padding:6px 12px 6px 8px;font:500 15px var(--body);cursor:pointer}
+.chip[aria-pressed="true"]{border-color:var(--accent);background:var(--tint)}
+.note{font-size:13px;color:var(--muted);margin:4px 0 0}
+@media (prefers-reduced-motion: reduce){.pill{transition:none}}
+</style>
+<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/build/three.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+
+<main class="wrap">
+<header>
+<div class="kicker">Teknik Elektronika · SMK</div>
+<h1>Servo SG90 / MG90S dalam 3D</h1>
+<p class="lead">Putar modelnya dengan jari atau mouse. Geser slider untuk membongkar dan merakit, lalu ketuk komponen bernomor untuk melihat fungsinya.</p>
+<dl class="ident">
+<div><dt>Guru Pengampu</dt><dd>Agus Supriyanto, S.T., M.T.</dd></div>
+<div><dt>Kelas</dt><dd>XI Teknik Elektronika Industri</dd></div>
+<div><dt>Mata Pelajaran</dt><dd>Perancangan Sistem Robotika</dd></div>
+<div><dt>Sekolah</dt><dd>SMK Pembnas Purwodadi</dd></div>
+</dl>
+</header>
+<section class="stage" id="stage" aria-label="Model 3D servo SG90 yang dapat diputar">
+<svg id="leaders" aria-hidden="true"></svg>
+<div id="labels"></div>
+</section>
+<div class="bar">
+<button class="btn" id="bPlay" type="button" aria-pressed="true">Animasi otomatis</button>
+<button class="btn" id="bMove" type="button" aria-pressed="false">Demo gerak</button>
+<button class="btn" id="bCut" type="button" aria-pressed="false">Potongan transparan</button>
+<button class="btn" id="bSpin" type="button" aria-pressed="true">Putar kamera</button>
+<label class="slide" for="explode"><span>Rakit</span><input type="range" id="explode" min="0" max="100" value="100"><span>Bongkar</span></label>
+</div>
+<section class="info" id="info" aria-live="polite">
+<div class="big" id="iNum">·</div>
+<div><h2 id="iName">Pilih sebuah komponen</h2><div class="en" id="iEn">Ketuk angka pada model atau daftar di bawah</div><p id="iFn">Komponen lain akan meredup supaya bagian yang dipilih terlihat jelas.</p></div>
+</section>
+<h2 class="list-h">Daftar komponen</h2>
+<ol class="parts" id="plist"></ol>
+<p class="note">Model disederhanakan untuk belajar. Bentuk dan ukuran detail dapat berbeda antar merek. Gerak demo memperlihatkan arah putar tiap roda gigi.</p>
+</main>
+
+<script>
+(function(){
+var stage=document.getElementById('stage');
+var renderer;
+try{renderer=new THREE.WebGLRenderer({antialias:true,alpha:true});}catch(e){stage.innerHTML='<p class="fallback">Browser ini belum mendukung WebGL, jadi model 3D tidak bisa ditampilkan.</p>';return;}
+renderer.setPixelRatio(Math.min(window.devicePixelRatio||1,2));
+stage.insertBefore(renderer.domElement,stage.firstChild);
+var scene=new THREE.Scene();
+var camera=new THREE.PerspectiveCamera(32,1,0.1,600);
+var TARGET=new THREE.Vector3(14,2.5,0);
+camera.position.set(TARGET.x+55,TARGET.y+30,85);
+var controls=new THREE.OrbitControls(camera,renderer.domElement);
+controls.target.copy(TARGET);controls.enableDamping=true;controls.enablePan=false;controls.autoRotateSpeed=1.2;
+scene.add(new THREE.HemisphereLight(0xffffff,0x8aa0bd,0.75));
+var key=new THREE.DirectionalLight(0xffffff,0.95);key.position.set(40,70,50);scene.add(key);
+var fill=new THREE.DirectionalLight(0xcfe3ff,0.4);fill.position.set(-50,10,-30);scene.add(fill);
+var rim=new THREE.DirectionalLight(0xffffff,0.35);rim.position.set(0,-30,-60);scene.add(rim);
+var grid=new THREE.GridHelper(170,34,0x1e78d6,0x1e78d6);grid.position.set(14,-42,0);grid.material.transparent=true;grid.material.opacity=0.16;scene.add(grid);
+var axisG=new THREE.BufferGeometry().setFromPoints([new THREE.Vector3(-5,-42,0),new THREE.Vector3(-5,46,0)]);
+var axis=new THREE.Line(axisG,new THREE.LineDashedMaterial({color:0x1e78d6,dashSize:1.4,gapSize:1.1,transparent:true,opacity:0.7}));axis.computeLineDistances();scene.add(axis);
+
+var parts=[],byId={};
+function M(c,r,m){return new THREE.MeshStandardMaterial({color:c,roughness:r==null?0.5:r,metalness:m||0});}
+function mesh(g,m,x,y,z,p){var o=new THREE.Mesh(g,m);o.position.set(x||0,y||0,z||0);p.add(o);return o;}
+function box(p,w,h,d,m,x,y,z){return mesh(new THREE.BoxGeometry(w,h,d),m,x,y,z,p);}
+function cyl(p,r1,r2,h,s,m,x,y,z){return mesh(new THREE.CylinderGeometry(r1,r2,h,s),m,x,y,z,p);}
+function gear(r,n,h,m){var g=new THREE.Group();cyl(g,r,r,h,32,m,0,0,0);var tw=2*Math.PI*r/n*0.45;for(var i=0;i<n;i++){var a=i/n*Math.PI*2;var t=box(g,0.8,h,tw,m,Math.cos(a)*(r+0.2),0,Math.sin(a)*(r+0.2));t.rotation.y=-a;}return g;}
+function reg(id,name,en,fn,g,asm,exp,anchor,order){
+  g.position.set(asm[0],asm[1],asm[2]);scene.add(g);
+  var mats=[];g.traverse(function(o){if(o.isMesh){o.userData.pid=id;if(mats.indexOf(o.material)<0)mats.push(o.material);}});
+  var p={id:id,name:name,en:en,fn:fn,g:g,asm:asm,exp:exp,anchor:anchor||[0,0,0],order:order,mats:mats,edges:[]};
+  parts.push(p);byId[id]=p;return p;
+}
+function addEdges(p){var arr=[];p.g.traverse(function(o){if(o.isMesh&&o.geometry.type==='BoxGeometry')arr.push(o);});
+  arr.forEach(function(o){var l=new THREE.LineSegments(new THREE.EdgesGeometry(o.geometry),new THREE.LineBasicMaterial({color:0x1e78d6}));l.visible=false;o.add(l);p.edges.push(l);});}
+
+var blue=0x2f6fb5;
+/* 9 Casing bawah */
+(function(){
+  var g=new THREE.Group(),b=M(blue,0.45,0.05),inn=M(0x1f4d86,0.6,0),dk=M(0x14181e,0.8,0);
+  box(g,23,1.5,12,inn,0,-4.25,0);
+  box(g,23,9.5,1.2,b,0,0.25,5.4);box(g,23,9.5,1.2,b,0,0.25,-5.4);
+  box(g,1.2,9.5,9.6,b,11.1,0.25,0);box(g,1.2,9.5,9.6,b,-11.1,0.25,0);
+  box(g,6,1.6,9,b,-14.5,1.5,0);box(g,6,1.6,9,b,14.5,1.5,0);
+  cyl(g,1.1,1.1,1.8,20,dk,-15.8,1.5,0);cyl(g,1.1,1.1,1.8,20,dk,15.8,1.5,0);
+  box(g,1.4,2.4,3.6,dk,11.3,-2.7,0);
+  var p=reg(9,'Casing Bawah','Lower Case','Rumah motor dan PCB. Telinga dudukannya dipakai untuk memasang servo pada rangka.',g,[0,0,0],[0,-30,0],[0,0,0],1);addEdges(p);
+})();
+/* 8 PCB */
+(function(){
+  var g=new THREE.Group(),pcb=M(0x1f8a55,0.6,0),gold=M(0xe0b020,0.35,0.8),chip=M(0x1a1d22,0.5,0.1),cap=M(0xb08a2a,0.5,0.3);
+  box(g,20,0.9,9.6,pcb,0,0,0);box(g,4.2,0.8,3.2,chip,2.5,0.85,-1.5);box(g,2.2,0.7,2.2,chip,-0.5,0.8,2.5);
+  box(g,1,0.8,1.6,cap,6,0.85,2.5);box(g,1,0.8,1.6,cap,-8,0.85,-2.5);
+  [-2.2,0,2.2].forEach(function(z){box(g,1.6,0.2,1.2,gold,8.3,0.55,z);});
+  [-1.2,1.2].forEach(function(z){box(g,1.2,0.2,1.2,gold,-8.8,0.55,z);});
+  reg(8,'PCB Kontrol','Control Circuit','Membandingkan sinyal PWM dengan umpan balik potensiometer, lalu menggerakkan motor ke arah yang benar.',g,[0,-3.05,0],[0,-22,0],[0,0,0],0.7);
+})();
+/* 7 Potensiometer */
+var knob;
+(function(){
+  var g=new THREE.Group(),body=M(0x3a78b8,0.5,0.1),metal=M(0xc7cfd9,0.35,0.9),dk=M(0x1b2530,0.6,0.2),pin=M(0xd5dbe3,0.3,0.9);
+  box(g,6,3.2,6,body,0,1.6,0);[-1.5,0,1.5].forEach(function(x){box(g,0.5,1.8,0.5,pin,x,-0.9,0);});
+  knob=new THREE.Group();knob.position.set(0,3.7,0);cyl(knob,1.7,1.7,1,24,metal,0,0,0);box(knob,2.6,0.2,0.45,dk,0,0.5,0);g.add(knob);
+  reg(7,'Potensiometer','Position Sensor','Sensor posisi. Ikut berputar bersama poros dan melaporkan sudutnya ke PCB sebagai umpan balik.',g,[-5,-2.6,0],[-5,-13.5,0],[0,2,0],0.6);
+})();
+/* 6 Motor DC */
+(function(){
+  var g=new THREE.Group(),can=M(0xb8c0cb,0.35,0.85),cap=M(0x8995a3,0.4,0.8),gold=M(0xe0b020,0.35,0.8),band=M(0x4a5565,0.5,0.4);
+  var b=cyl(g,3.6,3.6,13,32,can,0,0,0);b.rotation.z=Math.PI/2;
+  var c1=cyl(g,3.65,3.65,0.5,32,band,2,0,0);c1.rotation.z=Math.PI/2;
+  var c2=cyl(g,3.7,3.7,0.6,32,cap,-6.7,0,0);c2.rotation.z=Math.PI/2;
+  var s=cyl(g,0.7,0.7,2,16,cap,-7.8,0,0);s.rotation.z=Math.PI/2;
+  var pn=gear(1,8,1.2,cap);pn.rotation.z=Math.PI/2;pn.position.set(-8.6,0,0);g.add(pn);
+  box(g,1.6,0.5,1.4,gold,7.2,1.3,0);box(g,1.6,0.5,1.4,gold,7.2,-1.3,0);
+  reg(6,'Motor DC','DC Motor','Sumber putaran. Arah dan lama putarannya diatur oleh rangkaian pada PCB.',g,[4,1,0],[4,-6,0],[0,0,0],0.5);
+})();
+/* 5 Poros keluaran */
+(function(){
+  var g=new THREE.Group(),m=M(0xc7cfd9,0.35,0.9);m.flatShading=true;var dk=M(0x1b2530,0.6,0.2);
+  cyl(g,1.7,1.7,9,24,m,0,0,0);cyl(g,2.1,2.1,3.2,18,m,0,2.9,0);cyl(g,2.6,2.6,0.8,24,m,0,-3.6,0);cyl(g,0.7,0.7,0.1,12,dk,0,4.55,0);
+  reg(5,'Poros Keluaran','Output Shaft','Poros bergerigi yang berputar sekitar 0° sampai 180°. Lengan servo dipasang di ujung atasnya.',g,[-5,6.9,0],[-5,13,0],[0,0,0],0.3);
+})();
+/* 4 Roda gigi */
+var gA,gB,gC,gD;
+(function(){
+  var g=new THREE.Group(),cream=M(0xf3eddc,0.55,0),cream2=M(0xe6dfc8,0.55,0),steel=M(0x9aa6b4,0.4,0.8);
+  gA=gear(4.6,20,1.2,cream);gA.position.set(-5,0,0);cyl(gA,2,2,1.5,24,steel,0,0.15,0);g.add(gA);
+  gB=gear(3.5,16,1.2,cream);gB.position.set(3.2,0,0);g.add(gB);
+  gC=gear(1.8,8,1.2,cream2);gC.position.set(3.2,1.4,0);g.add(gC);
+  gD=gear(2.5,12,1.2,cream2);gD.position.set(7.6,1.4,0);g.add(gD);
+  cyl(g,0.5,0.5,4,12,steel,3.2,0.7,0);cyl(g,0.5,0.5,4,12,steel,7.6,0.7,0);
+  reg(4,'Roda Gigi','Gear Train','Menurunkan kecepatan motor dan menaikkan torsi. Roda gigi SG90 dari plastik, MG90S dari logam.',g,[0,2.4,0],[0,4,0],[4,0,0],0.4);
+})();
+/* 3 Casing atas */
+(function(){
+  var g=new THREE.Group(),b=M(0x3a7cc4,0.45,0.05),dk=M(0x14181e,0.8,0);
+  box(g,23,4,12,b,0,0,0);cyl(g,3.6,3.6,2.2,32,b,-5,3.1,0);cyl(g,2.4,2.4,0.15,32,dk,-5,4.2,0);
+  [-9.5,9.5].forEach(function(x){[-4.2,4.2].forEach(function(z){cyl(g,0.55,0.55,0.1,12,dk,x,2.05,z);});});
+  var p=reg(3,'Casing Atas','Upper Case','Menutup roda gigi dan menahan poros keluaran pada bantalannya.',g,[0,7,0],[0,21,0],[0,0,0],0.2);addEdges(p);
+})();
+/* 2 Lengan servo */
+(function(){
+  var g=new THREE.Group(),w=M(0xeef2f6,0.5,0),dk=M(0x2a3340,0.6,0.1);
+  cyl(g,3.4,3.4,2.4,32,w,0,0,0);cyl(g,1,1,0.1,16,dk,0,1.25,0);
+  box(g,17,1.3,4.6,w,8.5,-0.55,0);cyl(g,2.3,2.3,1.3,24,w,17,-0.55,0);
+  [8,11,14].forEach(function(x){cyl(g,0.5,0.5,1.4,12,dk,x,-0.55,0);});
+  reg(2,'Lengan Servo','Servo Horn','Meneruskan putaran poros ke beban, misalnya sendi robot atau sirip pesawat.',g,[-5,12.4,0],[-5,30,0],[8,0,0],0.1);
+})();
+/* 1 Sekrup */
+(function(){
+  var g=new THREE.Group(),m=M(0xc7cfd9,0.35,0.9),dk=M(0x2a3340,0.6,0.1);
+  cyl(g,1.9,1.9,1.1,24,m,0,0.55,0);box(g,2.8,0.25,0.5,dk,0,1.1,0);cyl(g,1.1,1.1,3.6,16,m,0,-1.8,0);
+  reg(1,'Sekrup Pengunci','Locking Screw','Mengikat lengan servo ke poros keluaran supaya tidak lepas saat berputar.',g,[-5,13.65,0],[-5,38,0],[0,0.5,0],0);
+})();
+/* 10 Kabel dan 11 konektor */
+(function(){
+  var g=new THREE.Group(),gold=M(0xe0b020,0.35,0.8);
+  var cols=[0x6b3f1d,0xd62828,0xf28c28],z0=[-0.9,0,0.9],zs=[-2.5,0,2.5];
+  cols.forEach(function(c,i){
+    var pts=[new THREE.Vector3(11,-2.7,z0[i]),new THREE.Vector3(15,-2.7,z0[i]),new THREE.Vector3(19.5,-6,zs[i]),new THREE.Vector3(23,-9,zs[i]),new THREE.Vector3(26,-9,zs[i])];
+    var tube=new THREE.Mesh(new THREE.TubeGeometry(new THREE.CatmullRomCurve3(pts),40,0.55,10,false),M(c,0.5,0));g.add(tube);
+    var tip=cyl(g,0.4,0.4,1.8,10,gold,26.9,-9,zs[i]);tip.rotation.z=Math.PI/2;
+  });
+  reg(10,'Kabel Servo','3-Wire Cable','Tiga jalur: coklat = GND, merah = VCC (4,8 sampai 6 V), oranye = Signal (PWM).',g,[0,0,0],[9,-30,0],[20,-6,0],0.8);
+  var h=new THREE.Group(),bk=M(0x20242b,0.6,0.1),hole=M(0x050608,0.8,0);
+  box(h,7,3.2,8.4,bk,30.4,-9,0);[-2.5,0,2.5].forEach(function(z){box(h,0.2,1.2,1.2,hole,33.95,-9,z);});
+  reg(11,'Konektor Kabel','Connector','Header 3 pin (jarak 2,54 mm) untuk dihubungkan ke Arduino atau mikrokontroler lain.',h,[0,0,0],[14,-31,0],[30,-9,0],0.85);
+})();
+
+/* UI dan animasi */
+var $=function(id){return document.getElementById(id);};
+var labelsEl=$('labels'),svg=$('leaders'),plist=$('plist'),slider=$('explode');
+var reduce=window.matchMedia&&window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+var selected=null,cut=false,moveOn=false,playing=!reduce,t=1,tween=null,cyc=5,time=0;
+var S=0.35,CYCLE=12;
+var order=parts.slice().sort(function(a,b){return a.id-b.id;});
+order.forEach(function(p){
+  var b=document.createElement('button');b.type='button';b.className='pill '+(p.id%2?'l':'r');
+  b.innerHTML='<span class="n">'+p.id+'</span><span class="t">'+p.name+'</span>';b.setAttribute('aria-label','Komponen '+p.id+': '+p.name);
+  b.addEventListener('click',function(){pick(p.id);});labelsEl.appendChild(b);p.pill=b;
+  var ln=document.createElementNS('http://www.w3.org/2000/svg','line');svg.appendChild(ln);p.line=ln;
+  var li=document.createElement('li'),c=document.createElement('button');c.type='button';c.className='chip';c.setAttribute('aria-pressed','false');
+  c.innerHTML='<span class="n">'+p.id+'</span><span>'+p.name+'</span>';c.addEventListener('click',function(){pick(p.id);});li.appendChild(c);plist.appendChild(li);p.chip=c;
+});
+function applyVisual(){
+  parts.forEach(function(p){
+    var casing=(p.id===3||p.id===9),op=(cut&&casing)?0.2:1;
+    if(selected!==null&&selected!==p.id)op*=0.18;
+    p.mats.forEach(function(m){var tr=op<1;if(m.transparent!==tr){m.transparent=tr;m.needsUpdate=true;}m.opacity=op;m.depthWrite=op>0.9;
+      if(m.emissive){m.emissive.setHex(selected===p.id?0x0a66c2:0x000000);m.emissiveIntensity=selected===p.id?0.45:0;}});
+    p.edges.forEach(function(l){l.visible=cut&&casing;});
+    p.pill.classList.toggle('sel',selected===p.id);p.chip.setAttribute('aria-pressed',selected===p.id?'true':'false');
+  });
+}
+function showInfo(){
+  var p=selected==null?null:byId[selected];
+  $('iNum').textContent=p?p.id:'·';$('iName').textContent=p?p.name:'Pilih sebuah komponen';
+  $('iEn').textContent=p?p.en:'Ketuk angka pada model atau daftar di bawah';
+  $('iFn').textContent=p?p.fn:'Komponen lain akan meredup supaya bagian yang dipilih terlihat jelas.';
+}
+function setPlaying(v){playing=v;$('bPlay').setAttribute('aria-pressed',v?'true':'false');}
+function pick(id){
+  selected=(selected===id)?null:id;applyVisual();showInfo();
+  if(selected!==null&&t<0.5){setPlaying(false);tween=1;}
+}
+$('bPlay').addEventListener('click',function(){setPlaying(!playing);tween=null;});
+$('bMove').addEventListener('click',function(e){moveOn=!moveOn;e.currentTarget.setAttribute('aria-pressed',moveOn?'true':'false');if(!moveOn)resetMotion();});
+$('bCut').addEventListener('click',function(e){cut=!cut;e.currentTarget.setAttribute('aria-pressed',cut?'true':'false');applyVisual();});
+$('bSpin').addEventListener('click',function(e){controls.autoRotate=!controls.autoRotate;e.currentTarget.setAttribute('aria-pressed',controls.autoRotate?'true':'false');});
+controls.autoRotate=!reduce;if(reduce)$('bSpin').setAttribute('aria-pressed','false');
+controls.addEventListener('start',function(){if(controls.autoRotate){controls.autoRotate=false;$('bSpin').setAttribute('aria-pressed','false');}});
+if(reduce)$('bPlay').setAttribute('aria-pressed','false');
+slider.addEventListener('input',function(){setPlaying(false);tween=null;t=slider.value/100;});
+
+function ease(x){return x*x*(3-2*x);}
+function clamp(x){return Math.max(0,Math.min(1,x));}
+function place(){
+  parts.forEach(function(p){
+    var s=ease(clamp((t-p.order*S)/(1-S)));
+    p.g.position.set(p.asm[0]+(p.exp[0]-p.asm[0])*s,p.asm[1]+(p.exp[1]-p.asm[1])*s,p.asm[2]+(p.exp[2]-p.asm[2])*s);
+  });
+}
+function resetMotion(){[byId[5].g,byId[2].g,byId[1].g,knob,gA,gB,gC,gD].forEach(function(o){o.rotation.y=0;});}
+function motion(){
+  var a=Math.sin(time*1.3)*1.35;
+  byId[5].g.rotation.y=a;byId[2].g.rotation.y=a;byId[1].g.rotation.y=a;knob.rotation.y=a;
+  gA.rotation.y=a;gB.rotation.y=-a*20/16;gC.rotation.y=gB.rotation.y;gD.rotation.y=-gC.rotation.y*8/12;
+}
+function cycleT(c){
+  if(c<1.5)return 0;if(c<5)return (c-1.5)/3.5;if(c<7.5)return 1;if(c<11)return 1-(c-7.5)/3.5;return 0;
+}
+var v=new THREE.Vector3(),clock=new THREE.Clock();
+function labels(){
+  var W=stage.clientWidth,H=stage.clientHeight,show=t>0.12;
+  parts.forEach(function(p){
+    v.set(p.anchor[0],p.anchor[1],p.anchor[2]);p.g.localToWorld(v);v.project(camera);
+    var sx=(v.x*0.5+0.5)*W,sy=(-v.y*0.5+0.5)*H,w=p.pill.offsetWidth,left=p.id%2===1;
+    p.pill.style.transform='translateY('+(sy-16).toFixed(1)+'px)';p.pill.style.opacity=show?1:0;p.pill.style.pointerEvents=show?'auto':'none';
+    p.line.setAttribute('x1',left?10+w:W-10-w);p.line.setAttribute('y1',sy);p.line.setAttribute('x2',sx);p.line.setAttribute('y2',sy);
+    p.line.style.opacity=show?0.7:0;
+  });
+}
+function fit(){
+  var tn=Math.tan(camera.fov*Math.PI/360),d=Math.max(46/tn,36/(tn*camera.aspect));
+  var dir=camera.position.clone().sub(controls.target).normalize();
+  camera.position.copy(controls.target).add(dir.multiplyScalar(d));controls.minDistance=d*0.35;controls.maxDistance=d*1.5;
+}
+function resize(){
+  var w=stage.clientWidth,h=stage.clientHeight;if(!w||!h)return;
+  renderer.setSize(w,h);camera.aspect=w/h;camera.updateProjectionMatrix();svg.setAttribute('viewBox','0 0 '+w+' '+h);fit();
+}
+if(window.ResizeObserver)new ResizeObserver(resize).observe(stage);else window.addEventListener('resize',resize);
+var down=null;
+renderer.domElement.addEventListener('pointerdown',function(e){down={x:e.clientX,y:e.clientY};});
+renderer.domElement.addEventListener('pointerup',function(e){
+  if(!down||Math.hypot(e.clientX-down.x,e.clientY-down.y)>6)return;
+  var r=renderer.domElement.getBoundingClientRect(),ndc=new THREE.Vector2((e.clientX-r.left)/r.width*2-1,-((e.clientY-r.top)/r.height)*2+1);
+  var rc=new THREE.Raycaster();rc.setFromCamera(ndc,camera);
+  var hits=rc.intersectObjects(scene.children,true).filter(function(h){return h.object.userData.pid;});
+  if(hits.length)pick(hits[0].object.userData.pid);else if(selected!==null){selected=null;applyVisual();showInfo();}
+});
+function tick(){
+  var dt=Math.min(clock.getDelta(),0.05);time+=dt;
+  if(playing){cyc=(cyc+dt)%CYCLE;t=cycleT(cyc);slider.value=Math.round(t*100);}
+  else if(tween!==null){t+=(tween-t)*Math.min(1,dt*3);if(Math.abs(tween-t)<0.002){t=tween;tween=null;}slider.value=Math.round(t*100);}
+  place();if(moveOn)motion();
+  controls.update();labels();renderer.render(scene,camera);requestAnimationFrame(tick);
+}
+resize();applyVisual();showInfo();place();tick();
+//__END__
+})();
+</script>
+
+</body></html>
